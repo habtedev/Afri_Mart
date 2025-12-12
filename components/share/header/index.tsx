@@ -194,7 +194,7 @@ export default function Header() {
 
               {/* Main navigation links */}
               <div className="flex items-center divide-x divide-white/10">
-                {data.headerMenu.map((menu) => (
+                {data.headerMenus.map((menu) => (
                   <Link
                     key={menu.href}
                     href={menu.href}
@@ -255,7 +255,7 @@ export default function Header() {
             <nav className="space-y-4" aria-label="Mobile navigation">
               <Search className="mb-6" />
 
-              {data.headerMenu.map((menu) => (
+              {data.headerMenus.map((menu) => (
                 <Link
                   key={menu.href}
                   href={menu.href}
