@@ -71,7 +71,7 @@ export default async function Page() {
       <HomeCarousel items={data.carousels} />
       <div className='md:p-4 md:space-y-4 bg-border'>
 
-        // --Home card slider
+         {/* Home card slider */}
         <HomeCard cards={cards} />
           <Card className='w-full rounded-none'>
           <CardContent className='p-4 items-center gap-3'>
@@ -79,7 +79,7 @@ export default async function Page() {
           </CardContent>
         </Card>
 
-        // -- Best selling slider
+         {/* Best selling slider */}
         <Card className='w-full rounded-none'>
           <CardContent className='p-4 items-center gap-3'>
             <ProductSlider

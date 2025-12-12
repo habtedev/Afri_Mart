@@ -24,6 +24,8 @@
     "next-intl": "^4.5.8",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "react-image-zooom": "^1.5.6",
+    "react-medium-image-zoom": "^5.4.0",
     "tailwind-merge": "^3.4.0",
     "zod": "^4.1.13"
   },
