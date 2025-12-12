@@ -95,7 +95,7 @@ export function HomeCarousel({
         <CarouselContent>
           {items.map((item, index) => (
             <CarouselItem 
-              key={`${item.id || item.title}-${index}`}
+              key={`${item.title}-${index}`}
               aria-roledescription="slide"
               aria-label={`${index + 1} of ${items.length}`}
             >

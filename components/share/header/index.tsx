@@ -203,17 +203,10 @@ export default function Header() {
                       "text-white hover:bg-white/10 transition-colors",
                       "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
                     )}
-                    onMouseEnter={() =>
-                      menu.hasDropdown && handleCategoryHover(menu.name)
-                    }
+                    onMouseEnter={() => handleCategoryHover(menu.name)}
                     onMouseLeave={() => handleCategoryHover(null)}
                   >
                     {menu.name}
-                    {menu.isNew && (
-                      <Badge className="ml-2 px-1.5 py-0 text-[10px] bg-primary">
-                        New
-                      </Badge>
-                    )}
                   </Link>
                 ))}
               </div>
@@ -253,7 +246,9 @@ export default function Header() {
             </div>
 
             <nav className="space-y-4" aria-label="Mobile navigation">
-              <Search className="mb-6" />
+              <div className="mb-6">
+                <Search />
+              </div>
 
               {data.headerMenus.map((menu) => (
                 <Link
@@ -264,11 +259,6 @@ export default function Header() {
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-medium">{menu.name}</span>
-                    {menu.isNew && (
-                      <Badge className="px-2 py-0.5 text-xs bg-primary">
-                        New
-                      </Badge>
-                    )}
                   </div>
                 </Link>
               ))}
