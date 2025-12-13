@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import data from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import useCartStore from "@/hook/use-cart-store";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -43,8 +44,10 @@ export default function Header() {
     setActiveCategory(category);
   }, []);
 
-  // Mock cart items count - replace with your actual cart state
-  const cartItemsCount = 3;
+  // Cart items count from zustand store
+  const cartItemsCount = useCartStore(
+    (state) => state.cart.items.reduce((sum, item) => sum + item.quantity, 0)
+  );
 
   return (
     <>

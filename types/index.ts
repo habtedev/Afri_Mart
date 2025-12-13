@@ -1,4 +1,8 @@
-import { ProductInputSchema, ReviewInputSchema } from "@/lib/vallidator";
+import {
+  CartSchema,
+  OrderItemSchema,
+  ProductInputSchema,
+} from '@/lib/vallidator'
 import z from "zod";
 
 export type IProductInput = z.infer<typeof ProductInputSchema>
@@ -57,3 +61,5 @@ export type ICarousel = {
   isPublished: boolean
   description?: string
 }
+export type OrderItem = z.infer<typeof OrderItemSchema>
+export type Cart = z.infer<typeof CartSchema>

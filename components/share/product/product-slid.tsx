@@ -22,7 +22,7 @@ export default function ProductSlider({
 }) {
   return (
     <div className='w-full bg-background'>
-      <h2 className='h2-bold mb-5'>{title}</h2>
+      <h2 className='h2-bold mb-4'>{title}</h2>
       <Carousel
         opts={{
           align: 'start',
