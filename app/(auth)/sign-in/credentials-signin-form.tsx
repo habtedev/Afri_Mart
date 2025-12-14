@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -28,10 +28,8 @@ const DEFAULT_VALUES =
     ? { email: 'admin@example.com', password: '123456' }
     : { email: '', password: '' }
 
-export default function CredentialsSignInForm() {
+export default function CredentialsSignInForm({ callbackUrl = '/dashboard' }: { callbackUrl?: string }) {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
 
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()

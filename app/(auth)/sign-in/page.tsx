@@ -1,3 +1,4 @@
+
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
@@ -8,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button'
 import { APP_NAME } from '@/lib/constants'
 import CredentialsSignInForm from './credentials-signin-form'
+import GoogleSignInButton from '@/components/auth/GoogleSignInButton'
 
 export const metadata: Metadata = {
   title: `Sign In - ${APP_NAME}`,
@@ -21,8 +23,8 @@ export default async function SignIn({ searchParams }: { searchParams: { callbac
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 bg-gray-50">
-      <div className="container max-w-3xl w-full px-4">
-        {/* Sign In Form */}
+      <div className="container max-w-md w-full px-4">
+        {/* Sign In Card */}
         <Card className="border-2 shadow-lg w-full">
           <CardHeader className="text-center">
             <CardTitle className="text-3xl font-bold">Sign In</CardTitle>
@@ -31,41 +33,48 @@ export default async function SignIn({ searchParams }: { searchParams: { callbac
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="mt-4">
-            <CredentialsSignInForm />
+          <CardContent className="mt-4 flex flex-col gap-4">
+            {/* Google Sign-In */}
+            <GoogleSignInButton />
+
+            {/* Divider */}
+            <div className="flex items-center my-2">
+              <span className="flex-grow border-t border-gray-300"></span>
+              <span className="mx-2 text-gray-400 text-sm">or</span>
+              <span className="flex-grow border-t border-gray-300"></span>
+            </div>
+
+            {/* Email/Password Sign-In */}
+            <CredentialsSignInForm callbackUrl={callbackUrl} />
           </CardContent>
 
           <CardFooter className="flex flex-col space-y-4 border-t pt-6">
-            <div className="w-full">
-              <p className="text-center text-sm text-muted-foreground mb-4">
-                New to {APP_NAME}?
-              </p>
-              <Link href={`/register?callbackUrl=${encodeURIComponent(callbackUrl)}`} className="block">
-                <Button variant="outline" className="w-full py-4 text-base">
-                  Create your {APP_NAME} account
-                </Button>
+            <p className="text-center text-sm text-muted-foreground">
+              New to {APP_NAME}?{' '}
+              <Link href={`/register?callbackUrl=${encodeURIComponent(callbackUrl)}`} className="underline text-primary hover:text-primary/80">
+                Create an account
               </Link>
-            </div>
+            </p>
           </CardFooter>
         </Card>
 
-        {/* Benefits Section - below the form */}
-        <div className="mt-12 space-y-8">
-          <h2 className="text-2xl font-bold text-center mb-6">Why Sign In?</h2>
+        {/* Benefits Section */}
+        <div className="mt-10 space-y-6">
+          <h2 className="text-2xl font-bold text-center mb-4">Why Sign In?</h2>
           <BenefitCard
             icon={<Truck className="h-6 w-6" />}
             title="Fast, Free Delivery"
-            description="Access fast shipping and exclusive deals on millions of items"
+            description="Access fast shipping and exclusive deals on millions of items."
           />
           <BenefitCard
             icon={<Shield className="h-6 w-6" />}
             title="Secure Shopping"
-            description="Your account and transactions are protected with top-notch security"
+            description="Your account and transactions are protected with top-notch security."
           />
           <BenefitCard
             icon={<CreditCard className="h-6 w-6" />}
             title="Easy Payment"
-            description="Multiple payment options available for a smooth checkout"
+            description="Multiple payment options available for a smooth checkout experience."
           />
         </div>
       </div>
@@ -73,10 +82,11 @@ export default async function SignIn({ searchParams }: { searchParams: { callbac
   )
 }
 
+// Benefit Card Component
 function BenefitCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
-    <div className="flex items-start space-x-4 mb-4 bg-white p-4 rounded-lg shadow-sm">
-      <div className="bg-primary text-primary-foreground rounded-full p-3">
+    <div className="flex items-start gap-4 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex-shrink-0 bg-primary text-primary-foreground rounded-full p-3">
         {icon}
       </div>
       <div>

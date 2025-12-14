@@ -1,4 +1,5 @@
 import Credentials from 'next-auth/providers/credentials'
+import GoogleProvider from 'next-auth/providers/google'
 import { connectToDatabase } from '@/lib/db'
 import User from '@/lib/db/models/user.model'
 import bcrypt from 'bcrypt'
@@ -6,6 +7,10 @@ import type { NextAuthConfig } from 'next-auth'
 
 const authConfig: NextAuthConfig = {
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
     Credentials({
       name: 'Credentials',
       credentials: {
