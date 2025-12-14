@@ -2,28 +2,12 @@ import {
   CartSchema,
   OrderItemSchema,
   ProductInputSchema,
+  UserInputSchema,
+  UserSignInSchema,
 } from '@/lib/vallidator'
 import z from "zod";
 
 export type IProductInput = z.infer<typeof ProductInputSchema>
-// Minimal user input type to satisfy `lib/data.ts`
-export type IUserInput = {
-  name: string
-  email: string
-  password: string
-  role: string
-  address: {
-    fullName: string
-    street: string
-    city: string
-    province: string
-    postalCode: string
-    country: string
-    phone: string
-  }
-  paymentMethod: string
-  emailVerified: boolean
-}
 
 export type Data = {
   users: IUserInput[]
@@ -63,3 +47,6 @@ export type ICarousel = {
 }
 export type OrderItem = z.infer<typeof OrderItemSchema>
 export type Cart = z.infer<typeof CartSchema>
+// user
+export type IUserInput = z.infer<typeof UserInputSchema>
+export type IUserSignIn = z.infer<typeof UserSignInSchema>
