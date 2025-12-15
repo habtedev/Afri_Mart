@@ -50,7 +50,7 @@ export default function Header() {
           </div>
 
           {/* Desktop Menu */}
-          <div className="hidden lg:flex items-center gap-4 flex-shrink-0">
+          <div className="hidden lg:flex items-center gap-4 shrink-0">
             <Menu />
           </div>
 

@@ -1,104 +1,113 @@
-// lib/action/order-action.ts
 'use server'
 
-import { OrderItem, ShippingAddress, Order } from '@/types'
-import { round2 } from '../utils'
+import mongoose from 'mongoose'
+import { auth } from '@/auth'
+import { connectToDatabase } from '../db'
+import Order from '../db/models/order.model'
+import { Cart, OrderItem, ShippingAddress } from '@/types'
+import { OrderInputSchema } from '../vallidator'
 import { AVAILABLE_DELIVERY_DATES } from '../constants'
+import { round2 } from '../utils'
 
-export type CalcDeliveryParams = {
+/* -------------------------------------------------
+   Types
+------------------------------------------------- */
+
+export type CreateOrderResult = {
+  success: boolean
+  message: string
+  data?: {
+    orderId: string
+  }
+}
+
+type CalcDeliveryParams = {
   items: OrderItem[]
   shippingAddress?: ShippingAddress
   deliveryDateIndex?: number
 }
 
-export type CalcDeliveryResult = {
-  AVAILABLE_DELIVERY_DATES: typeof AVAILABLE_DELIVERY_DATES
-  deliveryDateIndex: number
-  itemsPrice: number
-  shippingPrice?: number
-  taxPrice?: number
-  totalPrice: number
-}
+/* -------------------------------------------------
+   Get Order By ID
+------------------------------------------------- */
 
-/**
- * Calculate delivery date, shipping cost, tax, and total price
- */
-export const calcDeliveryDateAndPrice = async ({
-  items,
-  shippingAddress,
-  deliveryDateIndex,
-}: CalcDeliveryParams): Promise<CalcDeliveryResult> => {
-  const itemsPrice = round2(
-    items.reduce((acc, item) => acc + item.price * item.quantity, 0)
-  )
+export async function getOrderById(orderId: string) {
+  await connectToDatabase()
 
-  const dateIndex =
-    deliveryDateIndex === undefined
-      ? AVAILABLE_DELIVERY_DATES.length - 1
-      : deliveryDateIndex
+  if (!mongoose.Types.ObjectId.isValid(orderId)) return null
 
-  const deliveryDate = AVAILABLE_DELIVERY_DATES[dateIndex]
-
-  const shippingPrice =
-    !shippingAddress || !deliveryDate
-      ? undefined
-      : deliveryDate.freeShippingMinPrice > 0 && itemsPrice >= deliveryDate.freeShippingMinPrice
-      ? 0
-      : deliveryDate.shippingPrice
-
-  const taxPrice = !shippingAddress ? undefined : round2(itemsPrice * 0.15)
-
-  const totalPrice = round2(
-    itemsPrice + (shippingPrice ?? 0) + (taxPrice ?? 0)
-  )
+  const order = await Order.findById(orderId).lean()
+  if (!order) return null
 
   return {
-    AVAILABLE_DELIVERY_DATES,
-    deliveryDateIndex: dateIndex,
-    itemsPrice,
-    shippingPrice,
-    taxPrice,
-    totalPrice,
+    ...order,
+    _id: order._id.toString(),
+    createdAt: order.createdAt?.toISOString(),
+    updatedAt: order.updatedAt?.toISOString(),
   }
 }
 
-/**
- * Create a new order
- */
-export const createOrder = async ({
-  items,
-  shippingAddress,
-  deliveryDateIndex,
-}: CalcDeliveryParams): Promise<Order> => {
-  try {
-    const res = await fetch('/api/orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items, shippingAddress, deliveryDateIndex }),
-    })
+/* -------------------------------------------------
+   Create Order (PUBLIC ENTRY POINT)
+------------------------------------------------- */
 
-    if (!res.ok) {
-      const error = await res.json()
-      throw new Error(error.message || 'Failed to create order')
+export async function createOrder(
+  cart: Cart
+): Promise<CreateOrderResult> {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      throw new Error('Unauthorized')
     }
 
-    return res.json()
-  } catch (err: unknown) {
-    if (err instanceof Error) throw err
-    throw new Error('Unknown error while creating order')
+    if (!cart.items || cart.items.length === 0) {
+      throw new Error('Cart is empty')
+    }
+
+    await connectToDatabase()
+
+    const order = await createOrderFromCart(cart, session.user.id)
+
+    return {
+      success: true,
+      message: 'Order placed successfully',
+      data: {
+        orderId: order._id.toString(),
+      },
+    }
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error',
+    }
   }
 }
 
-/**
- * Fetch orders (for user or admin)
- */
-export const getOrders = async (): Promise<Order[]> => {
-  try {
-    const res = await fetch('/api/orders')
-    if (!res.ok) throw new Error('Failed to fetch orders')
-    return res.json()
-  } catch (err: unknown) {
-    if (err instanceof Error) throw err
-    throw new Error('Unknown error while fetching orders')
-  }
+/* -------------------------------------------------
+   Internal: Create Order From Cart
+------------------------------------------------- */
+
+
+import { calcDeliveryDateAndPrice } from '../cart/pricing'
+
+async function createOrderFromCart(
+  cart: Cart,
+  userId: string
+) {
+  // 🔒 Recalculate all pricing on the server
+  const pricing = calcDeliveryDateAndPrice({
+    items: cart.items,
+    shippingAddress: cart.shippingAddress,
+    deliveryDateIndex: cart.deliveryDateIndex,
+  })
+
+  const orderInput = OrderInputSchema.parse({
+    user: userId,
+    items: cart.items,
+    shippingAddress: cart.shippingAddress,
+    paymentMethod: cart.paymentMethod,
+    ...pricing,
+  })
+
+  return await Order.create(orderInput)
 }

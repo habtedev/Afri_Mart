@@ -56,6 +56,7 @@ export type ClientSetting = {
 };
 import {
   CartSchema,
+  OrderInputSchema,
   OrderItemSchema,
   ProductInputSchema,
   ShippingAddressSchema,
@@ -102,6 +103,8 @@ export type ICarousel = {
   isPublished: boolean
   description?: string
 }
+
+export type IOrderInput = z.infer<typeof OrderInputSchema>
 export type OrderItem = z.infer<typeof OrderItemSchema>
 export type Cart = z.infer<typeof CartSchema>
 export type ShippingAddress = z.infer<typeof ShippingAddressSchema>

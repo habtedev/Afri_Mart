@@ -30,12 +30,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Separator } from '@/components/ui/separator'
 
 import useCartStore from '@/hook/use-cart-store'
-import useSettingStore from '@/hook/use-setting-store'
+import { AVAILABLE_PAYMENT_METHODS, AVAILABLE_DELIVERY_DATES } from '@/lib/constants'
 import useIsMounted from '@/hook/use-mouted'
 import { useToast } from '@/hook/use-toast'
 import { ShippingAddressSchema } from '@/lib/vallidator'
 import type { ShippingAddress } from '@/types'
-import { createOrder, calcDeliveryDateAndPrice } from '@/lib/action/order-action'
+import { createOrder } from '@/lib/action/order-action'
+import { calcDeliveryDateAndPrice } from '@/lib/cart/pricing'
 import { calculateFutureDate, formatDateTime } from '@/lib/utils'
 import ProductPrice from '@/components/share/product/product-price'
 import CheckoutFooter from './checkout-footer'
@@ -66,9 +67,10 @@ const CheckoutForm = () => {
   const router = useRouter()
   const isMounted = useIsMounted()
 
-  const {
-    setting: { availablePaymentMethods, availableDeliveryDates },
-  } = useSettingStore()
+
+  // Use payment and delivery methods directly from constants
+  const availablePaymentMethods = AVAILABLE_PAYMENT_METHODS
+  const availableDeliveryDates = AVAILABLE_DELIVERY_DATES
 
   const {
     cart: { 
@@ -141,8 +143,13 @@ const CheckoutForm = () => {
     try {
       const res = await createOrder({
         items,
+        itemsPrice,
+        shippingPrice,
+        taxPrice,
+        totalPrice,
         shippingAddress,
         deliveryDateIndex,
+        paymentMethod,
       })
 
       toast({ 
@@ -151,8 +158,10 @@ const CheckoutForm = () => {
         variant: 'default' 
       })
       clearCart()
-      // If your Order type has an id or orderId, use it here:
-      router.push(`/checkout/${(res as any).id || ''}`)
+      // Redirect to the order detail page using the returned orderId
+      if (res && res.data && res.data.orderId) {
+        router.push(`/checkout/${res.data.orderId}`)
+      }
     } catch (error) {
       toast({ 
         title: 'Order failed',
@@ -197,7 +206,7 @@ const CheckoutForm = () => {
   useEffect(() => {
     if (availablePaymentMethods?.length > 0 && !paymentMethod) {
       const defaultMethod = availablePaymentMethods[0]
-      const methodValue = typeof defaultMethod === 'string' ? defaultMethod : defaultMethod.name
+      const methodValue = typeof defaultMethod === 'string' ? defaultMethod : defaultMethod.id
       setPaymentMethod(methodValue)
     }
   }, [availablePaymentMethods, paymentMethod, setPaymentMethod])
@@ -362,31 +371,20 @@ const CheckoutForm = () => {
                   onValueChange={handleSelectPaymentMethod}
                   className='space-y-3'
                 >
-                  {availablePaymentMethods.map((pm: any) => {
-                    let value: string;
-                    let label: string;
-                    if (typeof pm === 'string') {
-                      value = pm;
-                      label = pm;
-                    } else if (pm && typeof pm === 'object') {
-                      value = String(pm.name ?? '');
-                      label = String(pm.label ?? pm.name ?? '');
-                    } else {
-                      value = '';
-                      label = '';
-                    }
-                    return (
-                      <div key={value} className='flex items-center space-x-2'>
-                        <RadioGroupItem value={value} id={`payment-${value}`} />
-                        <Label 
-                          htmlFor={`payment-${value}`} 
-                          className='flex-1 cursor-pointer py-2'
-                        >
-                          {label}
-                        </Label>
-                      </div>
-                    )
-                  })}
+                  {availablePaymentMethods.map((pm) => (
+                    <div key={pm.id} className='flex items-center space-x-2'>
+                      <RadioGroupItem value={pm.id} id={`payment-${pm.id}`} disabled={!pm.enabled} />
+                      <Label
+                        htmlFor={`payment-${pm.id}`}
+                        className={`flex-1 cursor-pointer py-2 ${!pm.enabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        {pm.label}
+                        {!pm.enabled && (
+                          <span className='ml-2 text-xs text-muted-foreground'>(Coming soon)</span>
+                        )}
+                      </Label>
+                    </div>
+                  ))}
                 </RadioGroup>
               ) : (
                 <div className='flex items-center justify-between p-3 bg-muted rounded-lg'>
@@ -483,18 +481,18 @@ const CheckoutForm = () => {
                   <h3 className='font-semibold mb-3'>Delivery Options</h3>
                   {isDeliveryEditing ? (
                     <RadioGroup
-                      value={availableDeliveryDates[deliveryDateIndex!]?.name || ''}
+                      value={availableDeliveryDates[deliveryDateIndex!]?.label || ''}
                       onValueChange={(value) => {
-                        const index = availableDeliveryDates.findIndex((d: any) => d.name === value)
+                        const index = availableDeliveryDates.findIndex((d: any) => d.label === value)
                         handleSelectDeliveryDate(index)
                       }}
                       className='space-y-3'
                     >
                       {availableDeliveryDates.map((dd: any) => (
-                        <div key={dd.name} className='flex items-center space-x-2'>
-                          <RadioGroupItem value={dd.name} id={`delivery-${dd.name}`} />
+                        <div key={dd.label} className='flex items-center space-x-2'>
+                          <RadioGroupItem value={dd.label} id={`delivery-${dd.label}`} />
                           <Label 
-                            htmlFor={`delivery-${dd.name}`} 
+                            htmlFor={`delivery-${dd.label}`} 
                             className='flex-1 cursor-pointer py-2'
                           >
                             <div className='flex justify-between items-center'>

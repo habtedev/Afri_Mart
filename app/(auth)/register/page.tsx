@@ -37,9 +37,9 @@ export default function SignUpPage({ callbackUrl = '/' }: SignUpPageProps) {
 
             {/* Divider */}
             <div className="flex items-center my-2">
-              <span className="flex-grow border-t border-gray-300"></span>
+              <span className="grow border-t border-gray-300"></span>
               <span className="mx-2 text-gray-400 text-sm">or</span>
-              <span className="flex-grow border-t border-gray-300"></span>
+              <span className="grow border-t border-gray-300"></span>
             </div>
 
             {/* Email/Password Registration */}
@@ -95,7 +95,7 @@ export default function SignUpPage({ callbackUrl = '/' }: SignUpPageProps) {
 function BenefitCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
     <div className="flex items-start gap-4 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex-shrink-0 bg-primary text-primary-foreground rounded-full p-3">
+      <div className="shrink-0 bg-primary text-primary-foreground rounded-full p-3">
         {icon}
       </div>
       <div>
