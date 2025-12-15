@@ -1,7 +1,9 @@
 'use client'
 
+
 import Link from 'next/link'
 import { Shield, Truck, CreditCard } from 'lucide-react'
+import { Suspense } from 'react'
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -27,8 +29,11 @@ export default function SignUpPage({ callbackUrl = '/' }: SignUpPageProps) {
           </CardHeader>
 
           <CardContent className="mt-4 flex flex-col gap-4">
+
             {/* Google Sign-In */}
-            <GoogleSignInButton />
+            <Suspense>
+              <GoogleSignInButton />
+            </Suspense>
 
             {/* Divider */}
             <div className="flex items-center my-2">

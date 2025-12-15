@@ -1,9 +1,16 @@
 'use client'
 
-import BrowsingHistoryList from '@/components/share/browse-history-list'
-import ProductPrice from '@/components/share/product/product-price'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+} from '@/components/ui/card'
 import {
   Select,
   SelectContent,
@@ -11,20 +18,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+
 import useCartStore from '@/hook/use-cart-store'
-import { APP_NAME, FREE_SHIPPING_MIN_PRICE } from '@/lib/constants'
-import Image from 'next/image'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import ProductPrice from '@/components/share/product/product-price'
+import BrowsingHistoryList from '@/components/share/browse-history-list'
+import { APP_NAME } from '@/lib/constants'
 
-export default function CartClient() {
+export default function CartPage() {
   const router = useRouter()
+  const { status } = useSession()
 
-  const {
-    cart: { items, itemsPrice },
-    updateItem,
-    removeItem,
-  } = useCartStore()
+  const { cart, updateItem, removeItem } = useCartStore();
+  const items = cart?.items || [];
+  const itemsPrice = cart?.itemsPrice || 0;
 
   return (
     <div>
@@ -35,7 +41,10 @@ export default function CartClient() {
               Your Shopping Cart is empty
             </CardHeader>
             <CardContent>
-              Continue shopping on <Link href="/">{APP_NAME}</Link>
+              Continue shopping on{' '}
+              <Link href="/" className="underline">
+                {APP_NAME}
+              </Link>
             </CardContent>
           </Card>
         ) : (
@@ -46,6 +55,7 @@ export default function CartClient() {
                 <CardHeader className="text-3xl pb-0">
                   Shopping Cart
                 </CardHeader>
+
                 <CardContent className="p-4">
                   <div className="flex justify-end border-b mb-4">
                     Price
@@ -120,7 +130,12 @@ export default function CartClient() {
                   ))}
 
                   <div className="flex justify-end text-lg my-2">
-                    Subtotal ({items.reduce((a, i) => a + i.quantity, 0)} items):
+                    Subtotal (
+                    {items.reduce(
+                      (a, i) => a + i.quantity,
+                      0
+                    )}{' '}
+                    items):
                     <span className="font-bold ml-1">
                       <ProductPrice price={itemsPrice} plain />
                     </span>
@@ -134,8 +149,16 @@ export default function CartClient() {
               <Card className="rounded-none">
                 <CardContent className="py-4 space-y-4">
                   <Button
-                    onClick={() => router.push('/checkout')}
                     className="rounded-full w-full"
+                    onClick={() => {
+                      if (status === 'authenticated') {
+                        router.push('/checkout')
+                      } else {
+                        router.push(
+                          '/sign-in?callbackUrl=/checkout'
+                        )
+                      }
+                    }}
                   >
                     Proceed to Checkout
                   </Button>

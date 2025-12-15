@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -28,8 +28,10 @@ const DEFAULT_VALUES =
     ? { email: 'admin@example.com', password: '123456' }
     : { email: '', password: '' }
 
-export default function CredentialsSignInForm({ callbackUrl = '/dashboard' }: { callbackUrl?: string }) {
+export default function CredentialsSignInForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get('callbackUrl') || '/'
 
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
@@ -44,12 +46,14 @@ const onSubmit = async (data: IUserSignIn) => {
   setIsLoading(true)
 
   try {
+    console.log('callbackUrl:', callbackUrl)
     const res = await signIn('credentials', {
       redirect: false,
       email: data.email,
       password: data.password,
       callbackUrl,
     })
+    console.log('signIn result:', res)
 
     if (res?.error) {
       // Show backend error directly in toast
@@ -61,13 +65,13 @@ const onSubmit = async (data: IUserSignIn) => {
       return
     }
 
-    if (res?.ok && res.url) {
+    if (res?.ok && !res.error) {
       toast({
         title: 'Successfully signed in!',
         description: 'Redirecting…',
         variant: 'default',
       })
-      router.replace(res.url)
+      router.replace(callbackUrl)
     } else {
       toast({
         title: 'Sign in failed',
